@@ -32,14 +32,15 @@ function TodoList() {
   const toast = useToast();
   const [completed, setCompleted] = useState<boolean>(false);
   const initialRef = useRef<HTMLInputElement>(null);
-  const [editId, seteditId] = useState<number | null>(null);
+  const [editId, seteditId] = useState<string | null>(null);
 
   const add = async (text: string): Promise<void> => {
-    const todo = {
+    const todoApp = {
+      id: Math.random().toString(36).substr(2, 9),
       text: text,
       completed: completed,
     };
-    addTodo(todo);
+    addTodo(todoApp);
     onClose();
     setEditText("");
     setCompleted(false);
@@ -50,8 +51,8 @@ function TodoList() {
     });
   };
 
-  const toggleTodo = async (id: number): Promise<void> => {
-    const todo = todos.find((todo) => todo.id === id);
+  const toggleTodo = async (id: string): Promise<void> => {
+    const todo = todos.find((todo) => todo?.id === id);
     if (todo) {
       onOpen();
       setEditText(todo.text);
@@ -87,10 +88,10 @@ function TodoList() {
       ...todo,
       completed: !todo.completed,
     };
-    updateTodo(updatedTodo.id, updatedTodo);
+    updateTodo(updatedTodo?.id, updatedTodo);
   };
 
-  const deleteBtn = (id: number): void => {
+  const deleteBtn = (id: string): void => {
     deleteTodo(id);
     toast({
       title: `Deleted successfully`,
@@ -142,11 +143,21 @@ function TodoList() {
           </ModalBody>
           <ModalFooter>
             {editId === null ? (
-              <Button onClick={() => add(editText)} colorScheme="blue" mr={3}>
+              <Button
+                isDisabled={!editText}
+                onClick={() => add(editText)}
+                colorScheme="blue"
+                mr={3}
+              >
                 Save
               </Button>
             ) : (
-              <Button onClick={update} colorScheme="blue" mr={3}>
+              <Button
+                isDisabled={!editText}
+                onClick={update}
+                colorScheme="blue"
+                mr={3}
+              >
                 Update
               </Button>
             )}
@@ -197,13 +208,13 @@ function TodoList() {
                   <ButtonGroup>
                     <Button
                       colorScheme="red"
-                      onClick={() => deleteBtn(todo.id)}
+                      onClick={() => deleteBtn(todo?.id)}
                     >
                       <DeleteIcon />
                     </Button>
                     <Button
                       colorScheme="orange"
-                      onClick={() => toggleTodo(todo.id)}
+                      onClick={() => toggleTodo(todo?.id)}
                     >
                       <EditIcon />
                     </Button>

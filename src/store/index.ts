@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from "axios";
 import { create, SetState } from "zustand";
 
 export interface Todo {
-  id: number;
+  id: string;
   text: string;
   completed: boolean;
 }
@@ -13,8 +13,8 @@ interface TodoStore {
   error: string;
   getTodo: () => Promise<void>;
   addTodo: (todo: Todo) => Promise<void>;
-  deleteTodo: (id: number) => Promise<void>;
-  updateTodo: (id: number, updatedTodo: Partial<Todo>) => Promise<void>;
+  deleteTodo: (id: string) => Promise<void>;
+  updateTodo: (id: string, updatedTodo: Partial<Todo>) => Promise<void>;
 }
 
 const useTodoStore = create<TodoStore>((set: SetState<TodoStore>) => ({
@@ -43,7 +43,7 @@ const useTodoStore = create<TodoStore>((set: SetState<TodoStore>) => ({
       console.error("Todo qo‘shishda xatolik:", error);
     }
   },
-  deleteTodo: async (id: number) => {
+  deleteTodo: async (id: string) => {
     try {
       await axios.delete(`http://localhost:3000/todos/${id}`);
       set((state) => ({ todos: state.todos.filter((todo) => todo.id !== id) }));
@@ -51,7 +51,7 @@ const useTodoStore = create<TodoStore>((set: SetState<TodoStore>) => ({
       console.error("Todo o‘chirishda xatolik:", error);
     }
   },
-  updateTodo: async (id: number, updatedTodo: Partial<Todo>) => {
+  updateTodo: async (id: string, updatedTodo: Partial<Todo>) => {
     try {
       const response: AxiosResponse<Todo> = await axios.put(
         `http://localhost:3000/todos/${id}`,
@@ -59,7 +59,7 @@ const useTodoStore = create<TodoStore>((set: SetState<TodoStore>) => ({
       );
       set((state) => ({
         todos: state.todos.map((todo) =>
-          todo.id === id ? response.data : todo
+          todo?.id === id ? response.data : todo
         ),
       }));
     } catch (error) {
