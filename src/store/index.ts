@@ -2,7 +2,7 @@ import axios, { AxiosResponse } from "axios";
 import { create, SetState } from "zustand";
 
 export interface Todo {
-  id: number;
+  id?: number;
   text: string;
   completed: boolean;
 }
