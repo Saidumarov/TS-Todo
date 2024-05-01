@@ -32,11 +32,11 @@ function TodoList() {
   const toast = useToast();
   const [completed, setCompleted] = useState<boolean>(false);
   const initialRef = useRef<HTMLInputElement>(null);
-  const [editId, seteditId] = useState<string | null>(null);
+  const [editId, seteditId] = useState<number | null>(null);
 
   const add = async (text: string): Promise<void> => {
     const todoApp = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: 2,
       text: text,
       completed: completed,
     };
@@ -51,7 +51,7 @@ function TodoList() {
     });
   };
 
-  const toggleTodo = async (id: string): Promise<void> => {
+  const toggleTodo = async (id: number): Promise<void> => {
     const todo = todos.find((todo) => todo?.id === id);
     if (todo) {
       onOpen();
@@ -91,7 +91,7 @@ function TodoList() {
     updateTodo(updatedTodo?.id, updatedTodo);
   };
 
-  const deleteBtn = (id: string): void => {
+  const deleteBtn = (id: number): void => {
     deleteTodo(id);
     toast({
       title: `Deleted successfully`,
