@@ -1,9 +1,9 @@
 import axios, { AxiosResponse } from "axios";
 import { create, SetState } from "zustand";
 
-interface Todo {
+export interface Todo {
   id: number;
-  title: string;
+  text: string;
   completed: boolean;
 }
 
@@ -29,7 +29,7 @@ const useTodoStore = create<TodoStore>((set: SetState<TodoStore>) => ({
       );
       set({ todos: response.data, loading: false });
     } catch (error) {
-      set({ error: error.message, loading: false });
+      set({ error: "Error", loading: false });
     }
   },
   addTodo: async (todo: Todo) => {

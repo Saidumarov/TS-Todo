@@ -23,14 +23,7 @@ import {
   Flex,
 } from "@chakra-ui/react";
 import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
-import useTodoStore from "../store/index";
-import axios from "axios";
-
-interface TodoApp {
-  id: number;
-  text: string;
-  completed: boolean;
-}
+import useTodoStore, { Todo } from "../store/index";
 
 function TodoList() {
   const { todos, addTodo, deleteTodo, updateTodo, getTodo } = useTodoStore();
@@ -39,9 +32,7 @@ function TodoList() {
   const toast = useToast();
   const [completed, setCompleted] = useState<boolean>(false);
   const initialRef = useRef<HTMLInputElement>(null);
-  const finalRef = useRef<HTMLButtonElement>(null);
-  const [btnActive, setbtnActive] = useState<boolean>(false);
-  const [editId, seteditId] = useState<string>("");
+  const [editId, seteditId] = useState<number | null>(null);
 
   const add = async (text: string): Promise<void> => {
     const todo = {
@@ -59,13 +50,14 @@ function TodoList() {
     });
   };
 
-  const toggleTodo = async (id: string): Promise<void> => {
-    setbtnActive(false);
-    onOpen();
-    const todo = await axios.get<TodoApp>(`http://localhost:3000/todos/${id}`);
-    setEditText(todo.data.text);
-    setCompleted(todo.data.completed);
-    seteditId(id);
+  const toggleTodo = async (id: number): Promise<void> => {
+    const todo = todos.find((todo) => todo.id === id);
+    if (todo) {
+      onOpen();
+      setEditText(todo.text);
+      setCompleted(todo.completed);
+      seteditId(id);
+    }
   };
 
   const update = async (): Promise<void> => {
@@ -73,30 +65,32 @@ function TodoList() {
       text: editText,
       completed: completed,
     };
-    updateTodo(editId, todo);
-    onClose();
-    setEditText("");
-    setCompleted(false);
-    toast({
-      title: `Updated successfully`,
-      status: "warning",
-      isClosable: true,
-    });
+    if (editId !== null) {
+      updateTodo(editId, todo);
+      onClose();
+      setEditText("");
+      setCompleted(false);
+      toast({
+        title: `Updated successfully`,
+        status: "warning",
+        isClosable: true,
+      });
+    }
   };
 
   const changeCompleted = (value: string): void => {
     setCompleted(value === "true");
   };
 
-  const handleCheck = (el: TodoApp): void => {
-    const todo = {
-      text: el.text,
-      completed: !el.completed,
+  const handleCheck = (todo: Todo): void => {
+    const updatedTodo = {
+      ...todo,
+      completed: !todo.completed,
     };
-    updateTodo(el.id, todo);
+    updateTodo(updatedTodo.id, updatedTodo);
   };
 
-  const deleteBtn = (id: string): void => {
+  const deleteBtn = (id: number): void => {
     deleteTodo(id);
     toast({
       title: `Deleted successfully`,
@@ -113,7 +107,6 @@ function TodoList() {
     <div className="todo-container">
       <Modal
         initialFocusRef={initialRef}
-        finalFocusRef={finalRef}
         isOpen={isOpen}
         onClose={() => {
           onClose();
@@ -123,7 +116,7 @@ function TodoList() {
       >
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Add Todo</ModalHeader>
+          <ModalHeader>{editId ? "Update Todo" : "Add Todo"}</ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
             <FormControl>
@@ -148,7 +141,7 @@ function TodoList() {
             </FormControl>
           </ModalBody>
           <ModalFooter>
-            {btnActive ? (
+            {editId === null ? (
               <Button onClick={() => add(editText)} colorScheme="blue" mr={3}>
                 Save
               </Button>
@@ -171,7 +164,6 @@ function TodoList() {
           variant="outline"
           onClick={() => {
             onOpen();
-            setbtnActive(true);
           }}
         >
           Add
@@ -179,10 +171,10 @@ function TodoList() {
       </div>
       <div>
         <Box marginTop={"50px"} padding={"20px"} bg={"rgb(237, 235, 245)"}>
-          {todos?.length > 0 ? (
-            todos.map((todo, i) => (
+          {todos.length > 0 ? (
+            todos.map((todo) => (
               <Box
-                key={i}
+                key={todo.id}
                 marginTop={"20px"}
                 bg={"rgb(255, 255, 255)"}
                 padding={"20px"}
@@ -194,7 +186,7 @@ function TodoList() {
                     isChecked={todo.completed}
                     onChange={() => handleCheck(todo)}
                   >
-                    {todo.completed ? (
+                    {todo?.completed ? (
                       <Text>{todo.text}</Text>
                     ) : (
                       <s>
